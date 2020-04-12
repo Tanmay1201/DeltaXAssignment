@@ -5,7 +5,7 @@ var cookieSession = require("cookie-session");
 var bodyParser = require("body-parser");
 var passport = require("passport");
 var MongoClient = require("mongodb").MongoClient;
-var { User, Artists, url } = require("../backend/dbConnection");
+var { User, Artists, url, Songs, Ratings } = require("../backend/dbConnection");
 var cors = require("cors");
 
 app.use(cors());
@@ -21,6 +21,24 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
+app.post("/addArtist", function(req, res) {
+  var artistData = {
+    name: req.body.artistName,
+    bio: req.body.artistName,
+    date: req.body.date
+  };
+  Artists.create(artistData, function(error, artists) {
+    if (error) {
+      console.log(error);
+    } else {
+      var data = {
+        message: "Success"
+      };
+      res.send(data);
+    }
+  });
+});
+
 app.post("/register", function(req, res) {
   var userData = {
     name: req.body.name,
@@ -33,7 +51,36 @@ app.post("/register", function(req, res) {
       console.log(error);
     } else {
       console.log("Success!");
+
       return res.redirect("/");
+    }
+  });
+});
+
+app.post("/newSongData", function(req, res) {
+  var songData = {
+    name: req.body.songName,
+    releaseDate: req.body.songReleaseDate,
+    Artists: req.body.artistNames
+  };
+
+  var ratingsData = {
+    name: req.body.songName,
+    avgRating: 1,
+    numberOfUsersRated: 0,
+    allOverRating: 0
+  };
+
+  Ratings.create(ratingsData);
+
+  Songs.create(songData, function(error, song) {
+    if (error) {
+      console.log(error);
+    } else {
+      var data = {
+        message: "Success"
+      };
+      res.send(data);
     }
   });
 });
@@ -60,7 +107,7 @@ app.post("/getSongsWithoutUsersRated", function(req, res) {
           $project: {
             "songInfo.name": 1,
             "songInfo.releaseDate": 1,
-            "songInfo.artists": 1
+            "songInfo.Artists": 1
           }
         }
       ])
@@ -92,7 +139,6 @@ app.post("/getSongsWithUsersRating", function(req, res) {
           (currentNumberOfUsersRated * currentAverageRating + songRating) /
           currentNumberOfUsersRated;
         var setRate = answer / currentNumberOfUsersRated;
-        console.log(setRate);
         dbo.collection("ratings").update(
           { name: songName },
           {
@@ -112,7 +158,7 @@ app.post("/getArtistName", function(req, res) {
     if (err) throw err;
     var dbo = db.db("AMusically");
     dbo
-      .collection("Artists")
+      .collection("artists")
       .find({}, { projection: { _id: 0, name: 1 } })
       .toArray(function(err, result) {
         if (err) throw err;

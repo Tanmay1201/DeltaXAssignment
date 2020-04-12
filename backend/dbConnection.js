@@ -9,6 +9,30 @@ db.once("open", function(callback) {
   console.log("Connection succeeded");
 });
 
+const Ratings = mongoose.model(
+  "ratings",
+  new mongoose.Schema({
+    name: {
+      type: String,
+      required: true,
+      minlength: 5,
+      maxlength: 50
+    },
+    avgRating: {
+      type: Number,
+      required: true
+    },
+    numberOfUsersRated: {
+      type: Number,
+      required: true
+    },
+    allOverRating: {
+      type: Number,
+      required: true
+    }
+  })
+);
+
 const Artists = mongoose.model(
   "Artists",
   new mongoose.Schema({
@@ -18,16 +42,8 @@ const Artists = mongoose.model(
       minlength: 5,
       maxlength: 50
     },
-    month: {
-      type: String,
-      required: true
-    },
-    year: {
-      type: String,
-      required: true
-    },
     date: {
-      type: String,
+      type: Date,
       required: true
     },
     bio: {
@@ -37,6 +53,24 @@ const Artists = mongoose.model(
   })
 );
 
+const Songs = mongoose.model(
+  "song",
+  new mongoose.Schema({
+    name: {
+      type: String,
+      required: true,
+      minlength: 1,
+      maxlength: 50
+    },
+
+    releaseDate: {
+      type: Date,
+      required: true
+    },
+
+    Artists: Array
+  })
+);
 const User = mongoose.model(
   "user",
   new mongoose.Schema({
@@ -68,4 +102,4 @@ const User = mongoose.model(
   })
 );
 
-module.exports = { User, Artists, url };
+module.exports = { User, Artists, url, Songs, Ratings };
